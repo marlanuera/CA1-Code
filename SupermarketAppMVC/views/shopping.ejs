@@ -6,121 +6,35 @@
   <title>SunnySide Market - Shopping</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
 
-  <!-- INTERNAL CSS -->
   <style>
-    body {
-      background-color: #FFFBEA;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
+    body { background-color: #FFFBEA; font-family: Arial, sans-serif; }
+    nav.navbar { background-color: #2E8B57 !important; }
+    nav .navbar-brand { font-family: 'Pacifico', cursive; font-size: 1.8rem; color: white !important; }
+    nav .nav-link { color: white !important; font-weight: bold; }
+    nav .nav-link:hover { background-color: #FFD54F; color: black !important; border-radius: 5px; }
 
-    /* NAVBAR */
-    nav.navbar {
-      background-color: #2E8B57 !important;
-    }
+    .hero { text-align: center; margin: 30px 0; }
+    .hero h2 { color: #2E8B57; margin-bottom: 20px; }
 
-    nav .navbar-brand {
-      font-family: 'Pacifico', cursive;
-      font-size: 1.8rem;
-      color: white !important;
-    }
-
-    nav .nav-link {
-      color: white !important;
-      font-weight: bold;
-    }
-
-    nav .nav-link:hover {
-      background-color: #FFD54F;
-      color: black !important;
-      border-radius: 5px;
-    }
-
-    /* Hero Section */
-    .hero {
-      text-align: center;
-      margin: 30px 0;
-    }
-
-    .hero h2 {
-      color: #2E8B57;
-      margin-bottom: 20px;
-    }
-
-    /* Controls */
-    .controls {
-      margin-bottom: 30px;
-    }
-
-    /* Product Card */
-    .card {
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      height: 100%;
-    }
-
-    .card-body {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 250px; /* ensures uniform height */
-    }
-
-    .card .price {
-      font-weight: bold;
-      color: #FFA500;
-      font-size: 1.1rem;
-    }
-
-    .card .category {
-      color: #555;
-      font-size: 0.9rem;
-    }
-
-    .card img {
-    height: 200px;          /* fixed height for all images */
-    object-fit: cover;      /* scale & crop to fill the space */
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
-    }
-
-
-    /* View Product button */
-    .btn-view {
-      background-color: #FFD54F; /* yellow */
-      color: black;
-      border: none;
-    }
-
-    .btn-view:hover {
-      background-color: #FFA500; /* orange on hover */
-      color: white;
-    }
-
-    .add-to-cart-btn {
-      background-color: #FFA500;
-      border: none;
-    }
-
-    .add-to-cart-btn:hover {
-      background-color: #FF8C00;
-    }
+    .card { border-radius: 15px; box-shadow: 0 0 10px rgba(0,0,0,0.1); transition: transform 0.2s; height: 100%; }
+    .card:hover { transform: translateY(-5px); }
+    .card-body { display: flex; flex-direction: column; justify-content: space-between; min-height: 280px; }
+    .card .price { font-weight: bold; color: #FFA500; font-size: 1.1rem; }
+    .card .category { color: #555; font-size: 0.9rem; }
+    .card img { height: 200px; object-fit: cover; border-top-left-radius: 15px; border-top-right-radius: 15px; }
+    .btn-view { background-color: #FFD54F; color: black; border: none; }
+    .btn-view:hover { background-color: #FFA500; color: white; }
+    .add-to-cart-btn { background-color: #FFA500; border: none; }
+    .add-to-cart-btn:hover { background-color: #FF8C00; }
 
     @media(max-width: 768px) {
-      .controls .col-md-4,
-      .controls .col-md-3 {
-        margin-bottom: 10px;
-      }
+      .controls .col-md-4, .controls .col-md-3 { margin-bottom: 10px; }
     }
   </style>
 </head>
 <body>
-  <!-- NAVBAR -->
   <nav class="navbar navbar-expand-sm navbar-dark">
       <div class="container-fluid">
           <a class="navbar-brand" href="#">SunnySide Market</a>
@@ -129,24 +43,17 @@
           </button>
           <div class="collapse navbar-collapse" id="collapsibleNavbar">
               <ul class="navbar-nav ms-auto">
-                  <li class="nav-item">
-                      <a class="nav-link" href="/cart">View Cart</a>
-                  </li> 
-                  <li class="nav-item">
-                      <a class="nav-link" href="/logout">Logout</a>
-                  </li> 
+                  <li class="nav-item"><a class="nav-link" href="/cart">View Cart</a></li> 
+                  <li class="nav-item"><a class="nav-link" href="/reviews">Reviews</a></li>
+                  <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li> 
               </ul>
           </div>
       </div>
   </nav>
 
-  <!-- Hero -->
-  <div class="hero">
-    <h2>Welcome to SunnySide Market</h2>
-  </div>
+  <div class="hero"><h2>Welcome to SunnySide Market</h2></div>
 
-  <!-- Controls -->
-  <div class="container controls">
+  <div class="container controls mb-4">
     <div class="row align-items-center">
       <div class="col-md-4 mb-2">
         <input type="text" id="searchInput" class="form-control" placeholder="Search products...">
@@ -171,7 +78,6 @@
     </div>
   </div>
 
-  <!-- Products -->
   <div class="container">
     <div class="row" id="productContainer">
       <% products.forEach(product => { %>
@@ -197,7 +103,6 @@
     </div>
   </div>
 
-  <!-- JS for search, filter, sort -->
   <script>
     const searchInput = document.getElementById('searchInput');
     const categorySelect = document.getElementById('categorySelect');
@@ -217,16 +122,10 @@
       });
 
       filtered.sort((a, b) => {
-        if(sort === 'name-asc') {
-          return a.querySelector('.card-title').textContent.localeCompare(b.querySelector('.card-title').textContent);
-        } else if(sort === 'name-desc') {
-          return b.querySelector('.card-title').textContent.localeCompare(a.querySelector('.card-title').textContent);
-        } else if(sort === 'price-asc') {
-          return parseFloat(a.querySelector('.price').textContent.replace('$','')) - parseFloat(b.querySelector('.price').textContent.replace('$',''));
-        } else if(sort === 'price-desc') {
-          return parseFloat(b.querySelector('.price').textContent.replace('$','')) - parseFloat(a.querySelector('.price').textContent.replace('$',''));
-        }
-        return 0;
+        if(sort === 'name-asc') return a.querySelector('.card-title').textContent.localeCompare(b.querySelector('.card-title').textContent);
+        if(sort === 'name-desc') return b.querySelector('.card-title').textContent.localeCompare(a.querySelector('.card-title').textContent);
+        if(sort === 'price-asc') return parseFloat(a.querySelector('.price').textContent.replace('$','')) - parseFloat(b.querySelector('.price').textContent.replace('$',''));
+        if(sort === 'price-desc') return parseFloat(b.querySelector('.price').textContent.replace('$','')) - parseFloat(a.querySelector('.price').textContent.replace('$',''));
       });
 
       productContainer.innerHTML = '';
@@ -239,6 +138,7 @@
   </script>
 </body>
 </html>
+
 
 
 
