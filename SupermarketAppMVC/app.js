@@ -10,12 +10,8 @@ const app = express();
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/images');
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.originalname);
-    }
+    destination: (req, file, cb) => cb(null, 'public/images'),
+    filename: (req, file, cb) => cb(null, file.originalname)
 });
 const upload = multer({ storage: storage });
 
@@ -47,7 +43,7 @@ const checkAdmin = (req, res, next) => {
     res.redirect('/shopping');
 };
 
-// Middleware for form validation
+// Middleware for registration validation
 const validateRegistration = (req, res, next) => {
     const { username, email, password, address, contact, role } = req.body;
     if (!username || !email || !password || !address || !contact || !role) {
@@ -61,93 +57,204 @@ const validateRegistration = (req, res, next) => {
     next();
 };
 
-// Home page
-app.get('/', (req, res) => {
-    res.render('index', { user: req.session.user });
-});
+// --- Routes --- //
 
-// Inventory (admin only)
+// Home page
+app.get('/', (req, res) => res.render('index', { user: req.session.user }));
+
+// Inventory (admin)
 app.get('/inventory', checkAuthenticated, checkAdmin, ProductsController.listProductsView);
 
-// Shopping (user)
+// Shopping
 app.get('/shopping', checkAuthenticated, ProductsController.listProductsViewShopping);
 
 // Product details
 app.get('/product/:id', checkAuthenticated, ProductsController.getProductByIdView);
 
-// Add product (admin only)
-app.get('/addProduct', checkAuthenticated, checkAdmin, (req, res) => {
-    res.render('addProduct', { user: req.session.user });
-});
+// Add product (admin)
+app.get('/addProduct', checkAuthenticated, checkAdmin, (req, res) => res.render('addProduct', { user: req.session.user }));
 app.post('/addProduct', checkAuthenticated, checkAdmin, upload.single('image'), ProductsController.addProductView);
 
-// Update product (admin only)
+// Update product (admin)
 app.get('/updateProduct/:id', checkAuthenticated, checkAdmin, ProductsController.getProductByIdEditView);
 app.post('/updateProduct/:id', checkAuthenticated, checkAdmin, upload.single('image'), ProductsController.updateProductView);
 
-// Delete product (admin only)
+// Delete product (admin)
 app.post('/deleteProduct/:id', checkAuthenticated, checkAdmin, ProductsController.deleteProductView);
 
-// Cart
-app.get('/cart', checkAuthenticated, (req, res) => {
-    const cart = req.session.cart || [];
-    res.render('cart', { cart, user: req.session.user });
+// --- Cart Routes using cartitems table ---
+
+// View Cart
+app.get('/cart', checkAuthenticated, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const [cart] = await db.promise().query(`
+            SELECT ci.id AS cartId, ci.quantity, p.id AS productId, p.productName, p.price, p.category, p.image
+            FROM cartitems ci
+            JOIN products p ON ci.productId = p.id
+            WHERE ci.userId = ?
+        `, [userId]);
+        res.render('cart', { cart, user: req.session.user });
+    } catch (err) {
+        console.error(err);
+        res.send('Error fetching cart');
+    }
 });
 
-// Add to cart
-app.post('/add-to-cart/:id', checkAuthenticated, ProductsController.addToCart);
+// Add to Cart
+app.post('/add-to-cart/:id', checkAuthenticated, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const productId = parseInt(req.params.id);
 
-// Update cart quantity
-app.post('/update-cart/:id', checkAuthenticated, (req, res) => {
-    const cart = req.session.cart || [];
-    const productId = parseInt(req.params.id);
+        // Check if already in cart
+        const [rows] = await db.promise().query(
+            `SELECT * FROM cartitems WHERE userId = ? AND productId = ?`,
+            [userId, productId]
+        );
+
+        if (rows.length > 0) {
+            // Update quantity
+            await db.promise().query(
+                `UPDATE cartitems SET quantity = quantity + 1 WHERE userId = ? AND productId = ?`,
+                [userId, productId]
+            );
+        } else {
+            // Insert new
+            await db.promise().query(
+                `INSERT INTO cartitems (userId, productId, quantity) VALUES (?, ?, 1)`,
+                [userId, productId]
+            );
+        }
+
+        res.redirect('/cart');
+    } catch (err) {
+        console.error(err);
+        res.send('Error adding to cart');
+    }
+});
+
+// Update Cart Quantity
+app.post('/update-cart/:id', checkAuthenticated, async (req, res) => {
+    const cartId = parseInt(req.params.id);
     const quantity = parseInt(req.body.quantity);
+    if (quantity < 1) return res.redirect('/cart');
 
-    const item = cart.find(i => i.id === productId);
-    if (item && quantity > 0) item.quantity = quantity;
-
-    req.session.cart = cart;
-    res.redirect('/cart');
+    try {
+        await db.promise().query('UPDATE cartitems SET quantity = ? WHERE id = ?', [quantity, cartId]);
+        res.redirect('/cart');
+    } catch (err) {
+        console.error(err);
+        res.send('Error updating cart');
+    }
 });
 
-// Remove item from cart
-app.post('/remove-from-cart/:id', checkAuthenticated, (req, res) => {
-    let cart = req.session.cart || [];
-    const productId = parseInt(req.params.id);
-    cart = cart.filter(item => item.id !== productId);
-    req.session.cart = cart;
-    res.redirect('/cart');
+// Remove from Cart
+app.post('/remove-from-cart/:id', checkAuthenticated, async (req, res) => {
+    const cartId = parseInt(req.params.id);
+    try {
+        await db.promise().query('DELETE FROM cartitems WHERE id = ?', [cartId]);
+        res.redirect('/cart');
+    } catch (err) {
+        console.error(err);
+        res.send('Error removing item');
+    }
 });
 
-// Clear all items from cart
-app.post('/cart/clear', checkAuthenticated, (req, res) => {
-    req.session.cart = [];
-    res.redirect('/cart');
+// Clear Cart
+app.post('/cart/clear', checkAuthenticated, async (req, res) => {
+    try {
+        await db.promise().query('DELETE FROM cartitems WHERE userId = ?', [req.session.user.id]);
+        res.redirect('/cart');
+    } catch (err) {
+        console.error(err);
+        res.send('Error clearing cart');
+    }
 });
+
 
 // Checkout page
-app.get('/checkout', checkAuthenticated, (req, res) => {
-    const cart = req.session.cart || [];
-    let subtotal = 0;
-    cart.forEach(item => { subtotal += item.price * item.quantity; });
-    const tax = subtotal * 0.08;
-    const total = subtotal + tax;
-    res.render('checkout', { cart, subtotal, tax, total, user: req.session.user });
+app.get('/checkout', checkAuthenticated, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+
+        // Fetch cart items with product details
+        const [cartItems] = await db.promise().query(`
+            SELECT c.id AS cartId, c.quantity, p.id AS productId, p.productName, p.category, p.price, p.image
+            FROM cartitems c
+            JOIN products p ON c.productId = p.id
+            WHERE c.userId = ?
+        `, [userId]);
+
+        if (!cartItems || cartItems.length === 0) {
+            return res.render('checkout', { cart: [], subtotal: 0, tax: 0, total: 0, user: req.session.user });
+        }
+
+        let subtotal = 0;
+        cartItems.forEach(item => { subtotal += item.price * item.quantity; });
+        const tax = subtotal * 0.08;
+        const total = subtotal + tax;
+
+        res.render('checkout', { cart: cartItems, subtotal, tax, total, user: req.session.user });
+    } catch (err) {
+        console.error(err);
+        res.send('Error loading checkout page');
+    }
 });
 
 // Process checkout
-app.post('/checkout', checkAuthenticated, (req, res) => {
-    // TODO: Save order to DB here
-    req.session.cart = [];
-    req.flash('success', 'Order placed successfully!');
-    res.redirect('/shopping');
+app.post('/checkout', checkAuthenticated, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const cart = await db.promise().query(`
+            SELECT c.quantity, p.id AS productId, p.price
+            FROM cartitems c
+            JOIN products p ON c.productId = p.id
+            WHERE c.userId = ?
+        `, [userId]);
+
+        const cartItems = cart[0];
+        if (!cartItems.length) return res.redirect('/cart');
+
+        // Calculate total
+        let subtotal = 0;
+        cartItems.forEach(item => { subtotal += item.price * item.quantity; });
+        const tax = subtotal * 0.08;
+        const total = subtotal + tax;
+
+        // Create order
+        const [orderResult] = await db.promise().query(
+            `INSERT INTO orders (userId, orderDate, totalAmount, status) VALUES (?, NOW(), ?, 'pending')`,
+            [userId, total]
+        );
+        const orderId = orderResult.insertId;
+
+        // Add order items
+        for (const item of cartItems) {
+            await db.promise().query(
+                `INSERT INTO orderitems (orderId, productId, quantity, price) VALUES (?, ?, ?, ?)`,
+                [orderId, item.productId, item.quantity, item.price]
+            );
+        }
+
+        // Clear cart
+        await db.promise().query(`DELETE FROM cartitems WHERE userId = ?`, [userId]);
+        req.session.cart = [];
+
+        // Redirect to order success page
+        res.render('orderSuccess', { orderId, total, user: req.session.user });
+    } catch (err) {
+        console.error(err);
+        res.send('Error processing your order');
+    }
 });
 
-// Show reviews page
+
+// --- Reviews Routes --- //
 app.get('/reviews', checkAuthenticated, async (req, res) => {
     try {
         const [reviews] = await db.promise().query(`
-            SELECT r.id, r.rating, r.comment, r.createdAt, u.username, p.productName
+            SELECT r.id, r.rating, r.comment, r.createdAt, r.userId, u.username, p.productName
             FROM reviews r
             JOIN users u ON r.userId = u.id
             JOIN products p ON r.productId = p.id
@@ -155,7 +262,6 @@ app.get('/reviews', checkAuthenticated, async (req, res) => {
         `);
 
         const [products] = await db.promise().query(`SELECT id, productName FROM products`);
-
         res.render('reviews', { reviews, products, user: req.session.user });
     } catch (err) {
         console.error(err);
@@ -163,7 +269,6 @@ app.get('/reviews', checkAuthenticated, async (req, res) => {
     }
 });
 
-// Add review
 app.post('/reviews/add', checkAuthenticated, async (req, res) => {
     const { productId, rating, comment } = req.body;
     try {
@@ -178,11 +283,10 @@ app.post('/reviews/add', checkAuthenticated, async (req, res) => {
     }
 });
 
-// Admin: View all customer reviews
 app.get('/admin/reviews', checkAuthenticated, checkAdmin, async (req, res) => {
     try {
         const [reviews] = await db.promise().query(`
-            SELECT r.id, r.rating, r.comment, r.createdAt, u.username, p.productName
+            SELECT r.id, r.rating, r.comment, r.createdAt, r.userId, u.username, p.productName
             FROM reviews r
             JOIN users u ON r.userId = u.id
             JOIN products p ON r.productId = p.id
@@ -195,32 +299,75 @@ app.get('/admin/reviews', checkAuthenticated, checkAdmin, async (req, res) => {
     }
 });
 
-
-// Delete review (admin only)
 app.post('/reviews/delete/:id', checkAuthenticated, async (req, res) => {
-    if (req.session.user.role !== 'admin') return res.redirect('/reviews');
     try {
+        const [rows] = await db.promise().query(`SELECT * FROM reviews WHERE id = ?`, [req.params.id]);
+        if (!rows.length) return res.redirect('/reviews');
+
+        const review = rows[0];
+        if (req.session.user.role !== 'admin' && req.session.user.id !== review.userId) {
+            req.flash('error', 'You are not allowed to delete this review');
+            return res.redirect('/reviews');
+        }
+
         await db.promise().query(`DELETE FROM reviews WHERE id = ?`, [req.params.id]);
-        res.redirect('/reviews');
+        if (req.session.user.role === 'admin') res.redirect('/admin/reviews');
+        else res.redirect('/reviews');
     } catch (err) {
         console.error(err);
         res.send('Error deleting review');
     }
 });
 
-// Register
-app.get('/register', (req, res) => {
-    res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] });
+// Admin: View all orders
+app.get('/admin/orders', checkAuthenticated, checkAdmin, async (req, res) => {
+    try {
+        const [orders] = await db.promise().query(`
+            SELECT o.id AS orderId, o.userId, o.orderDate, o.totalAmount, o.status, u.username, u.email
+            FROM orders o
+            JOIN users u ON o.userId = u.id
+            ORDER BY o.orderDate DESC
+        `);
+
+        // Get order items for each order
+        for (let order of orders) {
+            const [items] = await db.promise().query(`
+                SELECT oi.productId, oi.quantity, oi.price, p.productName
+                FROM orderitems oi
+                JOIN products p ON oi.productId = p.id
+                WHERE oi.orderId = ?
+            `, [order.orderId]);
+            order.items = items;
+        }
+
+        res.render('adminOrders', { orders, user: req.session.user });
+    } catch (err) {
+        console.error(err);
+        res.send('Error fetching orders');
+    }
 });
+
+// Admin: Update order status
+app.post('/admin/orders/:id/status', checkAuthenticated, checkAdmin, async (req, res) => {
+    const orderId = req.params.id;
+    const { status } = req.body; // 'pending', 'shipped', 'completed'
+    try {
+        await db.promise().query(`UPDATE orders SET status = ? WHERE id = ?`, [status, orderId]);
+        res.redirect('/admin/orders');
+    } catch (err) {
+        console.error(err);
+        res.send('Error updating order status');
+    }
+});
+
+
+// --- Auth Routes --- //
+app.get('/register', (req, res) => res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] }));
 app.post('/register', validateRegistration, UsersController.registerUser);
 
-// Login
-app.get('/login', (req, res) => {
-    res.render('login', { messages: req.flash('success'), errors: req.flash('error') });
-});
+app.get('/login', (req, res) => res.render('login', { messages: req.flash('success'), errors: req.flash('error') }));
 app.post('/login', UsersController.loginUser);
 
-// Logout
 app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/');
@@ -229,4 +376,3 @@ app.get('/logout', (req, res) => {
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-

@@ -70,13 +70,13 @@
               <td><%= item.category %></td>
               <td>$<%= item.price.toFixed(2) %></td>
               <td>
-                <form action="/update-cart/<%= item.id %>" method="POST">
+                <form action="/update-cart/<%= item.cartId %>" method="POST">
                   <input type="number" name="quantity" value="<%= item.quantity %>" min="1" class="form-control" onchange="this.form.submit()">
                 </form>
               </td>
               <td>$<%= (item.price * item.quantity).toFixed(2) %></td>
               <td>
-                <form action="/remove-from-cart/<%= item.id %>" method="POST">
+                <form action="/remove-from-cart/<%= item.cartId %>" method="POST">
                   <button type="submit" class="btn-delete"><i class="bi bi-trash-fill"></i></button>
                 </form>
               </td>
@@ -111,5 +111,3 @@
   </div>
 </body>
 </html>
-
-

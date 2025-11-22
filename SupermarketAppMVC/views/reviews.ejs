@@ -8,30 +8,88 @@
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
 
 <style>
-  body { background-color: #FFFBEA; font-family: Arial, sans-serif; }
-  nav.navbar { background-color: #2E8B57 !important; }
-  nav .navbar-brand { font-family: 'Pacifico', cursive; font-size: 1.8rem; color: white !important; }
-  nav .nav-link { color: white !important; font-weight: bold; }
-  nav .nav-link:hover { background-color: #FFD54F; color: black !important; border-radius: 5px; }
+body { 
+    background-color: #FFFBEA; 
+    font-family: Arial, sans-serif; 
+}
 
-  .review-card { background-color: #FFF5E1; border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
-  .review-header { display: flex; justify-content: space-between; align-items: center; }
-  .rating { color: #FFA500; font-weight: bold; }
-  .btn-delete { background-color: #FF4C4C; border: none; color: white; font-weight: bold; }
-  .btn-delete:hover { background-color: #FF1A1A; }
-  .btn-add { background-color: #2E8B57; color: white; font-weight: bold; }
-  .btn-add:hover { background-color: #3CB371; }
+nav.navbar { 
+    background-color: #2E8B57 !important; 
+}
+
+.cursive-logo {
+  font-family: 'Pacifico', cursive;
+}
+
+.normal-logo {
+  font-family: Arial, sans-serif; /* or whatever your main font is */
+}
+
+
+nav .nav-link { 
+    color: white !important; 
+    font-weight: bold; 
+}
+
+nav .nav-link:hover { 
+    background-color: #FFD54F; 
+    color: black !important; 
+    border-radius: 5px; 
+}
+
+/* Review card */
+.review-card { 
+    background-color: #FFF5E1; 
+    border-radius: 10px; 
+    padding: 15px; 
+    margin-bottom: 15px; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.review-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.rating { 
+    color: #FFA500; 
+    font-weight: bold; 
+}
+
+.btn-delete { 
+    background-color: #FF4C4C; 
+    border: none; 
+    color: white; 
+    font-weight: bold; 
+}
+
+.btn-delete:hover { 
+    background-color: #FF1A1A; 
+}
+
+.btn-add { 
+    background-color: #28a745; 
+    color: white; 
+    font-weight: bold; 
+}
+
+.btn-add:hover { 
+    background-color: #218838; 
+}
 </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-sm navbar-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">SunnySide Market</a>
+    <a class="navbar-brand" href="#">
+      <span class="cursive-logo">SunnySide</span>
+      <span class="normal-logo"> Market</span>
+    </a>
     <div class="collapse navbar-collapse" id="collapsibleNavbar">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item"><a class="nav-link" href="/shopping">Shopping</a></li>
         <li class="nav-item"><a class="nav-link" href="/cart">Cart</a></li>
-        <li class="nav-item"><a class="nav-link" href="/reviews">Reviews</a></li>
         <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
       </ul>
     </div>
@@ -42,7 +100,7 @@
   <h2>Product Reviews</h2>
 
   <!-- Add Review Form -->
-  <div class="mb-4 p-3 bg-light rounded shadow-sm">
+  <div class="mb-4">
     <form action="/reviews/add" method="POST" class="row g-2 align-items-end">
       <div class="col-md-4">
         <label for="productId" class="form-label">Product</label>
@@ -82,8 +140,9 @@
       </div>
       <p><%= r.comment %></p>
       <small class="text-muted"><%= new Date(r.createdAt).toLocaleString() %></small>
-
-      <% if(user.role === 'admin' || r.userId === user.id) { %>
+      
+      <!-- Delete button visible only to review owner or admin -->
+      <% if(user.id === r.userId || user.role === 'admin') { %>
         <form action="/reviews/delete/<%= r.id %>" method="POST" class="mt-2">
           <button type="submit" class="btn-delete">Delete</button>
         </form>
@@ -93,4 +152,3 @@
 </div>
 </body>
 </html>
-
