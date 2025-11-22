@@ -8,68 +8,19 @@
 
   <title>Inventory – SunnySide Market</title>
 
-  <!-- INTERNAL CSS -->
   <style>
-    body {
-      background-color: #FFFBEA;
-      font-family: Arial, sans-serif;
-    }
+    body { background-color: #FFFBEA; font-family: Arial, sans-serif; }
+    nav.navbar { background-color: #2E8B57 !important; }
+    .navbar-brand, .nav-link { color: white !important; font-weight: bold; }
+    .nav-link:hover { background-color: #FFD54F; color: black !important; border-radius: 5px; }
 
-    /* NAVBAR */
-    nav.navbar {
-      background-color: #2E8B57 !important;
-    }
+    .inventory-header { padding: 30px 0 10px 0; text-align: center; }
+    .inventory-header h2 { font-weight: bold; color: #2E8B57; }
 
-    .navbar-brand, .nav-link {
-      color: white !important;
-      font-weight: bold;
-    }
-
-    .nav-link:hover {
-      background-color: #FFD54F;
-      color: black !important;
-      border-radius: 5px;
-    }
-
-    /* PAGE HEADER */
-    .inventory-header {
-      padding: 30px 0 10px 0;
-      text-align: center;
-    }
-
-    .inventory-header h2 {
-      font-weight: bold;
-      color: #2E8B57;
-    }
-
-    /* TABLE STYLING */
-    .table-container {
-      background: white;
-      padding: 25px;
-      border-radius: 15px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
-    }
-
-    /* PRODUCT IMAGE */
-    .product-img {
-      width: 70px;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.2);
-    }
-
-    /* LOW STOCK HIGHLIGHT */
-    .low-stock {
-      background-color: #ffdddd;
-      color: #a30000;
-      font-weight: bold;
-      padding: 2px 6px;
-      border-radius: 6px;
-    }
-
-    /* SEARCH BAR */
-    .search-box {
-      margin-bottom: 20px;
-    }
+    .table-container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 0 12px rgba(0,0,0,0.1); }
+    .product-img { width: 70px; border-radius: 10px; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+    .low-stock { background-color: #ffdddd; color: #a30000; font-weight: bold; padding: 2px 6px; border-radius: 6px; }
+    .search-box { margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -86,6 +37,7 @@
       <div class="collapse navbar-collapse" id="collapsibleNavbar">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item"><a class="nav-link" href="/addProduct">Add Product</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/reviews">Customer Reviews</a></li>
           <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
         </ul>
       </div>
@@ -125,19 +77,8 @@
         <tbody>
           <% for (let i = 0; i < products.length; i++) { %>
             <tr>
-              <!-- PRODUCT NAME -->
-              <td>
-                <a href="/product/<%= products[i].id %>" class="fw-bold text-success">
-                  <%= products[i].productName %>
-                </a>
-              </td>
-
-              <!-- IMAGE -->
-              <td>
-                <img src="/images/<%= products[i].image %>" class="product-img">
-              </td>
-
-              <!-- QUANTITY (highlight if low) -->
+              <td><a href="/product/<%= products[i].id %>" class="fw-bold text-success"><%= products[i].productName %></a></td>
+              <td><img src="/images/<%= products[i].image %>" class="product-img"></td>
               <td>
                 <% if (products[i].quantity < 5) { %>
                   <span class="low-stock"><%= products[i].quantity %> (Low)</span>
@@ -145,21 +86,11 @@
                   <%= products[i].quantity %>
                 <% } %>
               </td>
-
-              <!-- PRICE -->
               <td>$<%= products[i].price.toFixed(2) %></td>
-
-              <!-- EDIT BUTTON -->
-              <td>
-                <a href="/updateProduct/<%= products[i].id %>" class="btn btn-warning btn-sm">Edit</a>
-              </td>
-
-              <!-- DELETE BUTTON -->
+              <td><a href="/updateProduct/<%= products[i].id %>" class="btn btn-warning btn-sm">Edit</a></td>
               <td>
                 <form action="/deleteProduct/<%= products[i].id %>" method="POST" style="display:inline;">
-                  <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this product?')">
-                    Delete
-                  </button>
+                  <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this product?')">Delete</button>
                 </form>
               </td>
             </tr>
@@ -169,7 +100,6 @@
     </div>
   </div>
 
-  <!-- SIMPLE SEARCH SCRIPT -->
   <script>
     const searchInput = document.getElementById("searchInput");
     const tableRows = document.querySelectorAll("#productTable tbody tr");
@@ -185,4 +115,5 @@
 
 </body>
 </html>
+
 

@@ -5,6 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const ProductsController = require('./controllers/ProductsController');
 const UsersController = require('./controllers/UsersController');
+const db = require('./db'); // Make sure this is your promise-based db
 const app = express();
 
 // Set up multer for file uploads
@@ -144,34 +145,68 @@ app.post('/checkout', checkAuthenticated, (req, res) => {
 
 // Show reviews page
 app.get('/reviews', checkAuthenticated, async (req, res) => {
-  const [reviews] = await db.query(`
-    SELECT r.id, r.rating, r.comment, r.createdAt, u.username, p.productName
-    FROM reviews r
-    JOIN users u ON r.userId = u.id
-    JOIN products p ON r.productId = p.id
-    ORDER BY r.createdAt DESC
-  `);
+    try {
+        const [reviews] = await db.promise().query(`
+            SELECT r.id, r.rating, r.comment, r.createdAt, u.username, p.productName
+            FROM reviews r
+            JOIN users u ON r.userId = u.id
+            JOIN products p ON r.productId = p.id
+            ORDER BY r.createdAt DESC
+        `);
 
-  const [products] = await db.query(`SELECT id, productName FROM products`);
+        const [products] = await db.promise().query(`SELECT id, productName FROM products`);
 
-  res.render('reviews', { reviews, products, user: req.session.user });
+        res.render('reviews', { reviews, products, user: req.session.user });
+    } catch (err) {
+        console.error(err);
+        res.send('Error fetching reviews');
+    }
 });
 
 // Add review
 app.post('/reviews/add', checkAuthenticated, async (req, res) => {
-  const { productId, rating, comment } = req.body;
-  await db.query(`INSERT INTO reviews (userId, productId, rating, comment) VALUES (?, ?, ?, ?)`, 
-                 [req.session.user.id, productId, rating, comment]);
-  res.redirect('/reviews');
+    const { productId, rating, comment } = req.body;
+    try {
+        await db.promise().query(
+            `INSERT INTO reviews (userId, productId, rating, comment) VALUES (?, ?, ?, ?)`,
+            [req.session.user.id, productId, rating, comment]
+        );
+        res.redirect('/reviews');
+    } catch (err) {
+        console.error(err);
+        res.send('Error adding review');
+    }
 });
+
+// Admin: View all customer reviews
+app.get('/admin/reviews', checkAuthenticated, checkAdmin, async (req, res) => {
+    try {
+        const [reviews] = await db.promise().query(`
+            SELECT r.id, r.rating, r.comment, r.createdAt, u.username, p.productName
+            FROM reviews r
+            JOIN users u ON r.userId = u.id
+            JOIN products p ON r.productId = p.id
+            ORDER BY r.createdAt DESC
+        `);
+        res.render('adminReviews', { reviews, user: req.session.user });
+    } catch (err) {
+        console.error(err);
+        res.send('Error fetching reviews');
+    }
+});
+
 
 // Delete review (admin only)
-app.post('/reviews/delete/:id', checkAuthenticated, (req, res) => {
-  if (req.session.user.role !== 'admin') return res.redirect('/reviews');
-  db.query(`DELETE FROM reviews WHERE id = ?`, [req.params.id]);
-  res.redirect('/reviews');
+app.post('/reviews/delete/:id', checkAuthenticated, async (req, res) => {
+    if (req.session.user.role !== 'admin') return res.redirect('/reviews');
+    try {
+        await db.promise().query(`DELETE FROM reviews WHERE id = ?`, [req.params.id]);
+        res.redirect('/reviews');
+    } catch (err) {
+        console.error(err);
+        res.send('Error deleting review');
+    }
 });
-
 
 // Register
 app.get('/register', (req, res) => {
