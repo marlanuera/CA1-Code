@@ -101,11 +101,13 @@ app.get('/cart', checkAuthenticated, async (req, res) => {
     }
 });
 
-// Add to Cart
+// Add to Cart (updated to use input quantity)
 app.post('/add-to-cart/:id', checkAuthenticated, async (req, res) => {
     try {
         const userId = req.session.user.id;
         const productId = parseInt(req.params.id);
+        let quantity = parseInt(req.body.quantity);
+        if (!quantity || quantity < 1) quantity = 1;
 
         // Check if already in cart
         const [rows] = await db.promise().query(
@@ -114,16 +116,16 @@ app.post('/add-to-cart/:id', checkAuthenticated, async (req, res) => {
         );
 
         if (rows.length > 0) {
-            // Update quantity
+            // Update quantity to add the new value
             await db.promise().query(
-                `UPDATE cartitems SET quantity = quantity + 1 WHERE userId = ? AND productId = ?`,
-                [userId, productId]
+                `UPDATE cartitems SET quantity = quantity + ? WHERE userId = ? AND productId = ?`,
+                [quantity, userId, productId]
             );
         } else {
             // Insert new
             await db.promise().query(
-                `INSERT INTO cartitems (userId, productId, quantity) VALUES (?, ?, 1)`,
-                [userId, productId]
+                `INSERT INTO cartitems (userId, productId, quantity) VALUES (?, ?, ?)`,
+                [userId, productId, quantity]
             );
         }
 
@@ -171,7 +173,6 @@ app.post('/cart/clear', checkAuthenticated, async (req, res) => {
         res.send('Error clearing cart');
     }
 });
-
 
 // Checkout page
 app.get('/checkout', checkAuthenticated, async (req, res) => {
@@ -248,7 +249,6 @@ app.post('/checkout', checkAuthenticated, async (req, res) => {
         res.send('Error processing your order');
     }
 });
-
 
 // --- Reviews Routes --- //
 app.get('/reviews', checkAuthenticated, async (req, res) => {
@@ -359,7 +359,6 @@ app.post('/admin/orders/:id/status', checkAuthenticated, checkAdmin, async (req,
         res.send('Error updating order status');
     }
 });
-
 
 // --- Auth Routes --- //
 app.get('/register', (req, res) => res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] }));
