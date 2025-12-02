@@ -13,7 +13,12 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'public/images'),
     filename: (req, file, cb) => cb(null, file.originalname)
 });
-const upload = multer({ storage });
+const upload = multer({ 
+    storage: multer.diskStorage({
+        destination: (req, file, cb) => cb(null, 'public/uploads'),
+        filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+    })
+});
 
 /* -------------------- APP SETTINGS -------------------- */
 app.set('view engine', 'ejs');
@@ -69,12 +74,22 @@ app.get('/inventory', checkAuthenticated, checkAdmin, ProductsController.listPro
 app.get('/admin/customers', checkAuthenticated, checkAdmin, UsersController.listCustomers);
 app.post('/admin/customers/:id/delete', checkAuthenticated, checkAdmin, UsersController.deleteCustomer);
 
+// Profile view
+app.get('/profile', checkAuthenticated, UsersController.profileView);
+// Update profile
+app.post('/profile', checkAuthenticated, UsersController.updateProfile);
+
 
 /* -------------------- SHOPPING PAGE -------------------- */
 app.get('/shopping', checkAuthenticated, async (req, res) => {
     const [products] = await db.promise().query('SELECT * FROM products');
-    res.render('shopping', { products, messages: req.flash() });
+    res.render('shopping', { 
+        products, 
+        messages: req.flash(),
+        user: req.session.user  // <-- add this
+    });
 });
+
 
 /* -------------------- PRODUCT DETAILS -------------------- */
 app.get('/product/:id', checkAuthenticated, ProductsController.getProductByIdView);

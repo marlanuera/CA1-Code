@@ -7,11 +7,11 @@ const UsersController = {
         const user = req.body;
         UsersModel.addUser(user, (err) => {
             if (err) {
+                console.error('Registration error:', err);
                 req.flash('error', 'Registration failed');
                 req.flash('formData', req.body);
                 return res.redirect('/register');
             }
-
             req.flash('success', 'Registration successful! Please log in.');
             res.redirect('/login');
         });
@@ -23,6 +23,7 @@ const UsersController = {
 
         UsersModel.getAllUsers((err, users) => {
             if (err) {
+                console.error('Login DB error:', err);
                 req.flash('error', 'Database error');
                 return res.redirect('/login');
             }
@@ -61,12 +62,11 @@ const UsersController = {
                 console.error('Error fetching customers:', err);
                 return res.status(500).send('Database error');
             }
-            console.log(customers); // debug
             res.render('adminCustomers', { customers, user: req.session.user, messages: req.flash() });
         });
     },
 
-    // Admin: Delete a customer account (with related orders and order items)
+    // Admin: Delete a customer account
     deleteCustomer: (req, res) => {
         const userId = req.params.id;
 
@@ -75,18 +75,21 @@ const UsersController = {
             [userId],
             (err) => {
                 if (err) {
+                    console.error('Error deleting user orders:', err);
                     req.flash('error', 'Error deleting user orders');
                     return res.redirect('/admin/customers');
                 }
 
                 db.query('DELETE FROM orders WHERE userId = ?', [userId], (err) => {
                     if (err) {
+                        console.error('Error deleting user orders:', err);
                         req.flash('error', 'Error deleting user orders');
                         return res.redirect('/admin/customers');
                     }
 
                     db.query('DELETE FROM users WHERE id = ?', [userId], (err) => {
                         if (err) {
+                            console.error('Error deleting user:', err);
                             req.flash('error', 'Error deleting user');
                             return res.redirect('/admin/customers');
                         }
@@ -97,6 +100,54 @@ const UsersController = {
                 });
             }
         );
+    },
+
+    // Profile view
+    profileView: (req, res) => {
+        const userId = req.session.user.id;
+        db.query('SELECT * FROM users WHERE id = ?', [userId], (err, results) => {
+            if (err || results.length === 0) {
+                console.error('Error fetching profile:', err);
+                req.flash('error', 'Error fetching profile');
+                return res.redirect('/shopping');
+            }
+            res.render('profile', { user: results[0], messages: req.flash() });
+        });
+    },
+
+    // Update profile
+    updateProfile: (req, res) => {
+        const userId = req.session.user.id;
+        const { username, email, address, contact } = req.body;
+
+        // Validate required fields
+        if (!username || !email) {
+            req.flash('error', 'Username and email are required');
+            return res.redirect('/profile');
+        }
+
+        const sql = `
+            UPDATE users
+            SET username = ?, email = ?, address = ?, contact = ?
+            WHERE id = ?
+        `;
+
+        db.query(sql, [username, email, address, contact, userId], (err) => {
+            if (err) {
+                console.error('Update profile DB error:', err);
+                req.flash('error', 'Error updating profile');
+                return res.redirect('/profile');
+            }
+
+            // Update session
+            req.session.user.username = username;
+            req.session.user.email = email;
+            req.session.user.address = address;
+            req.session.user.contact = contact;
+
+            req.flash('success', 'Profile updated successfully');
+            res.redirect('/profile');
+        });
     }
 };
 

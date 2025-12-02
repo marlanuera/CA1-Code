@@ -60,7 +60,6 @@ function printInvoice() {
     <a class="navbar-brand" href="#">SunnySide Market</a>
     <div class="collapse navbar-collapse">
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="/shopping">Continue Shopping</a></li>
         <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
       </ul>
     </div>
@@ -69,9 +68,9 @@ function printInvoice() {
 
 <div class="container mt-4 text-center">
   <h2 style="color:#2E8B57;">Order Confirmed!</h2>
-  <p>Thank you for your purchase. Your order ID is <strong><%= orderId %></strong>.</p>
+  <p>Thank you for your purchase! Your invoice has also been sent to your email. Your order ID is <strong><%= orderId %></strong>.</p>
   <p><strong>Total Paid:</strong> $<%= total.toFixed(2) %></p>
-  <a href="/shopping" class="btn btn-warning mt-2">Continue Shopping</a>
+  <a href="/shopping" class="btn btn-warning mt-2">Shopping</a>
 </div>
 
 <div class="invoice-box mt-4">
