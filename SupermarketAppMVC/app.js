@@ -65,6 +65,11 @@ app.get('/', (req, res) => {
 /* -------------------- INVENTORY (ADMIN) -------------------- */
 app.get('/inventory', checkAuthenticated, checkAdmin, ProductsController.listProductsView);
 
+// Admin: Customer Accounts
+app.get('/admin/customers', checkAuthenticated, checkAdmin, UsersController.listCustomers);
+app.post('/admin/customers/:id/delete', checkAuthenticated, checkAdmin, UsersController.deleteCustomer);
+
+
 /* -------------------- SHOPPING PAGE -------------------- */
 app.get('/shopping', checkAuthenticated, async (req, res) => {
     const [products] = await db.promise().query('SELECT * FROM products');

@@ -9,8 +9,7 @@
   <style>
     body { background-color: #FFFBEA; font-family: Arial, sans-serif; }
     nav.navbar { background-color: #2E8B57 !important; }
-    nav .navbar-brand { font-family: 'Pacifico', cursive; font-size: 1.8rem; color: white !important; }
-    nav .nav-link { color: white !important; font-weight: bold; }
+    nav .navbar-brand, nav .nav-link { color: white !important; font-weight: bold; }
     nav .nav-link:hover { background-color: #FFD54F; color: black !important; border-radius: 5px; }
 
     h2 { color: #2E8B57; margin-bottom: 20px; }
@@ -22,17 +21,24 @@
   </style>
 </head>
 <body>
+  <!-- NAVBAR -->
   <nav class="navbar navbar-expand-sm navbar-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">SunnySide Market</a>
+      <a class="navbar-brand" href="/">SunnySide Market</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
       <div class="collapse navbar-collapse" id="collapsibleNavbar">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item"><a class="nav-link" href="/inventory">Inventory</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/customers">Customer Accounts</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/reviews">Customer Reviews</a></li>
           <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
         </ul>
       </div>
     </div>
   </nav>
+
 
   <div class="container mt-4">
     <h2>All Customer Orders</h2>

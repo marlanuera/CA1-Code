@@ -1,11 +1,53 @@
 const ProductsModel = require('../models/Products');
+const db = require('../db'); // Make sure you have this so we can run SQL queries
 
 const ProductsController = {
 
     listProductsView: (req, res) => {
+        // First get products
         ProductsModel.getAllProducts((err, products) => {
             if (err) return res.status(500).send('Database error');
-            res.render('inventory', { products, user: req.session.user });
+
+            // Now get dashboard stats
+            const queries = {
+                sales: 'SELECT IFNULL(SUM(totalAmount),0) AS totalSales FROM orders',
+                orders: 'SELECT COUNT(*) AS totalOrders FROM orders',
+                pending: "SELECT COUNT(*) AS pendingOrders FROM orders WHERE status = 'pending'",
+                top: `
+                    SELECT p.productName, SUM(oi.quantity) AS totalSold
+                    FROM orderitems oi
+                    JOIN products p ON oi.productId = p.id
+                    GROUP BY oi.productId
+                    ORDER BY totalSold DESC
+                    LIMIT 1
+                `
+            };
+
+            db.query(queries.sales, (err, salesResult) => {
+                if (err) return res.status(500).send('Dashboard error');
+
+                db.query(queries.orders, (err, ordersResult) => {
+                    if (err) return res.status(500).send('Dashboard error');
+
+                    db.query(queries.pending, (err, pendingResult) => {
+                        if (err) return res.status(500).send('Dashboard error');
+
+                        db.query(queries.top, (err, topResult) => {
+                            if (err) return res.status(500).send('Dashboard error');
+
+                            // Now render with EVERYTHING combined
+                            res.render('inventory', {
+                                products,
+                                user: req.session.user,
+                                totalSales: salesResult[0].totalSales,
+                                totalOrders: ordersResult[0].totalOrders,
+                                pendingOrders: pendingResult[0].pendingOrders,
+                                topProduct: topResult
+                            });
+                        });
+                    });
+                });
+            });
         });
     },
 
@@ -90,3 +132,4 @@ const ProductsController = {
 };
 
 module.exports = ProductsController;
+

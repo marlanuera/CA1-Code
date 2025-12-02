@@ -6,21 +6,40 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <title>Inventory – SunnySide Market</title>
+
   <style>
     body { background-color: #FFFBEA; font-family: Arial, sans-serif; }
     nav.navbar { background-color: #2E8B57 !important; }
     .navbar-brand, .nav-link { color: white !important; font-weight: bold; }
     .nav-link:hover { background-color: #FFD54F; color: black !important; border-radius: 5px; }
 
-    .inventory-header { padding: 30px 0 10px 0; text-align: center; }
-    .inventory-header h2 { font-weight: bold; color: #2E8B57; }
+    /* DASHBOARD STYLES */
+    .dashboard-header { text-align: center; padding: 30px 0 20px 0; }
+    .dashboard-header h2 { color: #2E8B57; font-weight: bold; }
+    .cards-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-bottom: 40px; }
+    .dashboard-card {
+      background: white; 
+      padding: 20px; 
+      border-radius: 12px; 
+      width: 220px; 
+      text-align: center; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      transition: transform 0.2s;
+    }
+    .dashboard-card:hover { transform: translateY(-5px); }
+    .dashboard-card h3 { margin-bottom: 10px; color: #2E8B57; }
+    .dashboard-card p { font-size: 1.2rem; font-weight: bold; margin: 0; }
 
+    /* INVENTORY STYLES */
+    .inventory-header { padding: 10px 0 10px 0; text-align: center; }
+    .inventory-header h2 { font-weight: bold; color: #2E8B57; }
     .table-container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 0 12px rgba(0,0,0,0.1); }
     .product-img { width: 70px; border-radius: 10px; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
     .low-stock { background-color: #ffdddd; color: #a30000; font-weight: bold; padding: 2px 6px; border-radius: 6px; }
     .search-box { margin-bottom: 20px; }
   </style>
 </head>
+
 <body>
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-sm navbar-dark">
@@ -31,9 +50,9 @@
       </button>
       <div class="collapse navbar-collapse" id="collapsibleNavbar">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="/admin/dashboard">Dashboard</a></li>
           <li class="nav-item"><a class="nav-link" href="/addProduct">Add Product</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin/orders">Orders</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/orders">Customer Orders</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/customers">Customer Accounts</a></li>
           <li class="nav-item"><a class="nav-link" href="/admin/reviews">Customer Reviews</a></li>
           <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
         </ul>
@@ -41,8 +60,38 @@
     </div>
   </nav>
 
+  
+  <!-- ----------- DASHBOARD SECTION (PLACED ON TOP) ----------- -->
   <div class="container mt-4">
-    <p class="text-end"> Welcome, <strong><%= user.username %></strong> (<%= user.role %>) </p>
+    <div class="dashboard-header">
+      <h2>Admin Dashboard</h2>
+      <p class="text-muted">Quick stats and insights for SunnySide Market</p>
+    </div>
+
+    <div class="cards-container">
+      <div class="dashboard-card">
+        <h3>Total Sales</h3>
+        <p>$<%= totalSales.toFixed(2) %></p>
+      </div>
+      <div class="dashboard-card">
+        <h3>Total Orders</h3>
+        <p><%= totalOrders %></p>
+      </div>
+      <div class="dashboard-card">
+        <h3>Pending Orders</h3>
+        <p><%= pendingOrders %></p>
+      </div>
+      <div class="dashboard-card">
+        <h3>Top Product</h3>
+        <p><%= topProduct[0] ? topProduct[0].productName : 'N/A' %></p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ----------- INVENTORY SECTION (BELOW DASHBOARD) ----------- -->
+  <div class="container mt-4">
+
     <div class="inventory-header">
       <h2>Inventory Management</h2>
       <p class="text-muted">Manage stock levels, pricing, and product details</p>
@@ -102,5 +151,7 @@
       });
     });
   </script>
+
 </body>
 </html>
+
