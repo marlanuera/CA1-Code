@@ -12,6 +12,7 @@
     nav .navbar-brand { font-family: 'Pacifico', cursive; font-size: 1.8rem; color: white !important; }
     nav .nav-link { color: white !important; font-weight: bold; }
     nav .nav-link:hover { background-color: #FFD54F; color: black !important; border-radius: 5px; }
+
     .checkout-container { margin: 30px auto; max-width: 900px; }
     .checkout-header h2 { color: #2E8B57; margin-bottom: 20px; }
     .order-summary { background-color: #FFF5E1; padding: 20px; border-radius: 10px; margin-top: 20px; }
@@ -25,16 +26,7 @@
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-sm navbar-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">SunnySide Market</a>
-      <div class="collapse navbar-collapse" id="collapsibleNavbar">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <%- include('partials/navbar') %>
 
   <div class="container checkout-container">
     <div class="checkout-header">
@@ -78,8 +70,6 @@
 
         <div class="btn-container">
           <a href="/cart" class="btn btn-secondary">Back to Cart</a>
-
-          <!-- Navigate to payment page using GET -->
           <a href="/payment" class="btn btn-orange w-100">Proceed to Payment</a>
         </div>
 
@@ -92,6 +82,7 @@
   </div>
 </body>
 </html>
+
 
 
 

@@ -41,27 +41,9 @@
 </head>
 
 <body>
-  <!-- NAVBAR -->
-  <nav class="navbar navbar-expand-sm navbar-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/">SunnySide Market</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="collapsibleNavbar">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="/addProduct">Add Product</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin/orders">Customer Orders</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin/customers">Customer Accounts</a></li>
-          <li class="nav-item"><a class="nav-link" href="/admin/reviews">Customer Reviews</a></li>
-          <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <%- include('partials/navbar') %>
 
-  
-  <!-- ----------- DASHBOARD SECTION (PLACED ON TOP) ----------- -->
+  <!-- ----------- DASHBOARD SECTION ----------- -->
   <div class="container mt-4">
     <div class="dashboard-header">
       <h2>Admin Dashboard</h2>
@@ -88,10 +70,8 @@
     </div>
   </div>
 
-
-  <!-- ----------- INVENTORY SECTION (BELOW DASHBOARD) ----------- -->
+  <!-- ----------- INVENTORY SECTION ----------- -->
   <div class="container mt-4">
-
     <div class="inventory-header">
       <h2>Inventory Management</h2>
       <p class="text-muted">Manage stock levels, pricing, and product details</p>
@@ -151,7 +131,8 @@
       });
     });
   </script>
-
 </body>
 </html>
+
+
 

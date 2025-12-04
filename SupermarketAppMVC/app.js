@@ -64,8 +64,11 @@ const validateRegistration = (req, res, next) => {
 
 /* -------------------- HOME -------------------- */
 app.get('/', (req, res) => {
-    res.render('index', { user: req.session.user });
+  const user = req.session.user || null; // or wherever your logged-in user info is
+  res.render('index', { user });
 });
+
+
 
 /* -------------------- INVENTORY (ADMIN) -------------------- */
 app.get('/inventory', checkAuthenticated, checkAdmin, ProductsController.listProductsView);
