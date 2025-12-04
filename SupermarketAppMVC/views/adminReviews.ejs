@@ -81,19 +81,7 @@ nav .nav-link:hover {
 </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-sm navbar-dark">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">SunnySide Market</a>
-    <div class="collapse navbar-collapse" id="collapsibleNavbar">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="/inventory">Inventory</a></li>
-        <li class="nav-item"><a class="nav-link" href="/admin/orders">Customer Orders</a></li>
-        <li class="nav-item"><a class="nav-link" href="/admin/customers">Customer Accounts</a></li>
-        <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
+  <%- include('partials/navbar') %> 
 
 <div class="container mt-4">
   <h2>Customer Reviews</h2>
